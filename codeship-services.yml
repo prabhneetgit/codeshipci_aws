@@ -1,0 +1,38 @@
+demo:
+  build:
+    image: 398437307342.dkr.ecr.us-east-1.amazonaws.com/prabhneet/codeshipci-aws
+    dockerfile_path: Dockerfile
+  links:
+    - redis
+    - postgres
+  environment:
+    TEST_TOKEN: Testing123
+  volumes:
+    - ./tmp:/code
+
+demo_volumes:
+  build:
+    image: myapp
+    dockerfile_path: Dockerfile.volumes
+  volumes_from:
+    - demo
+
+redis:
+  image: redis:3.0.5
+
+postgres:
+   image: postgres:9.3.6
+
+aws_dockercfg:
+  image: codeship/aws-ecr-dockercfg-generator
+  add_docker: true
+  encrypted_env_file: aws-deployment.env.encrypted
+   
+awsdeployment:
+  image: codeship/aws-deployment
+  dockerfile_path: Dockerfile.aws
+  encrypted_env_file: aws-deployment.env.encrypted
+  environment:
+    - AWS_DEFAULT_REGION=us-east-1
+  volumes_from:
+    - demo
